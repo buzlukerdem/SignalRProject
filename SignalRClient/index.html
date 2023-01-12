@@ -17,18 +17,19 @@
             connection.start();
 
             $("#btnGonder").click(()=>{
-                let messages = $("$txtName").val() + $("#txtSurname").val();
-                connection.invoke("SendMessageAsync", messages).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}m`));
+                let message = $("#txtName").val();
+                connection.invoke("SendMessageAsync", message).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}`));
             })
-
+            
+            connection.on("receiveMessage", message =>{
+                $("div").append(message + "<br>")
+            })
         });
     </script>
 </head>
 <body>
-    <form>
-        <input type="text" class="form-control" placeholder="isim giriniz" id="txtName">
-        <input type="text" class="form-control" placeholder="soyisim giriniz" id="txtSurname">
-        <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button>
-    </form>
+    <input type="text" class="form-control" placeholder="isim giriniz" id="txtName">
+    <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button>
+    <div></div>
 </body>
 </html>
