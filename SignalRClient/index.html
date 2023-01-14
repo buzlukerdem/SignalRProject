@@ -12,9 +12,54 @@
     <script>
         // endpoint baglanti url i belirtildi.
         $(document).ready(()=>{ 
-            const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7174/myhub").build();
+            const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7174/myhub")
+            // baglanti kopma durumunda ki fonk..
+            .withAutomaticReconnect([1000, 3000, 5000]) // default olarak 0 - 2 - 10 - 30 dur tekrar istek sureleri
+            .build();
 
-            connection.start();
+            // baglantinin hic olmama durumu
+            async function baglan(){
+                try {
+                    await connection.start();
+                } catch (error) {
+                    setTimeout(() => baglan(), 2000); // 2 saniyede 1 baglanti yoksa tekrar baglanti istegi at.
+                }
+            }
+
+            baglan();
+
+            const durum = $("#durum");
+            connection.onreconnecting(error => {
+                durum.css("background-color","blue");
+                durum.css("color","white");
+                durum.html("Yeniden baglanilmaya calisiliyor...");
+                durum.fadeIn(2000,() => {
+                    setTimeout(() => {
+                        durum.fadeOut(3000);
+                    }, 2000);
+                });
+            });
+            connection.onreconnected(connectionId => {
+                durum.css("background-color","green");
+                durum.css("color","white");
+                durum.html("Yeniden baglanma saglandi...");
+                durum.fadeIn(2000,() => {
+                    setTimeout(() => {
+                        durum.fadeOut(3000);
+                    }, 2000);
+                });
+            });
+            connection.onclose(connectionId => {
+                durum.css("background-color","red");
+                durum.css("color","white");
+                durum.html("Yeniden baglanma basarisiz...");
+                durum.fadeIn(2000,() => {
+                    setTimeout(() => {
+                        durum.fadeOut(3000);
+                    }, 2000);
+                });
+            });
 
             $("#btnGonder").click(()=>{
                 let message = $("#txtName").val();
@@ -22,14 +67,17 @@
             })
             
             connection.on("receiveMessage", message =>{
-                $("div").append(message + "<br>")
+                $("#mesajlar").append(message + "<br>")
             })
         });
     </script>
 </head>
 <body>
+    <!-- Durumlari gosterecegimiz div display none -->
+    <div id="durum" style="display: none;"></div>
+
     <input type="text" class="form-control" placeholder="isim giriniz" id="txtName">
     <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button>
-    <div></div>
+    <div id="mesajlar"></div>
 </body>
 </html>
