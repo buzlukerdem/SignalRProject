@@ -29,55 +29,89 @@
 
             baglan();
 
+            function animationFetch(){
+                durum.fadeIn(2000,() => {
+                    setTimeout(() => {
+                        durum.fadeOut(2000);
+                    }, 2000);
+                });
+            };
+
             const durum = $("#durum");
+            const durum2 = $("#userdurum");
             connection.onreconnecting(error => {
                 durum.css("background-color","blue");
                 durum.css("color","white");
                 durum.html("Yeniden baglanilmaya calisiliyor...");
-                durum.fadeIn(2000,() => {
-                    setTimeout(() => {
-                        durum.fadeOut(3000);
-                    }, 2000);
-                });
+                animationFetch();
             });
             connection.onreconnected(connectionId => {
                 durum.css("background-color","green");
                 durum.css("color","white");
                 durum.html("Yeniden baglanma saglandi...");
-                durum.fadeIn(2000,() => {
-                    setTimeout(() => {
-                        durum.fadeOut(3000);
-                    }, 2000);
-                });
+                animationFetch();
             });
             connection.onclose(connectionId => {
                 durum.css("background-color","red");
                 durum.css("color","white");
                 durum.html("Yeniden baglanma basarisiz...");
-                durum.fadeIn(2000,() => {
+                animationFetch();
+            });
+
+            connection.on("userJoined", connectionId => {
+                durum2.html(`${connectionId} id'li user baglandi...`)
+                durum2.css("background-color","green");
+                durum2.css("color","white");
+                durum2.fadeIn(3000,() => {
                     setTimeout(() => {
-                        durum.fadeOut(3000);
-                    }, 2000);
+                        durum2.fadeOut(3000);
+                    }, 3000);
                 });
             });
+
+            connection.on("userLeaved", connectionId => {
+                durum2.html(`${connectionId} id'li user ayrildi...`)
+                durum2.css("background-color","red");
+                durum2.css("color","white");
+                durum2.fadeIn(3000,() => {
+                    setTimeout(() => {
+                        durum2.fadeOut(3000);
+                    }, 3000);
+                });
+            });
+
+            connection.on("clients", clientsData => {
+                let text = "";
+                $.each(clientsData, (index,item)=> {
+                    text += `<li>${item}</li>`
+                });
+                $("#clients").html(text)
+            });
+
 
             $("#btnGonder").click(()=>{
                 let message = $("#txtName").val();
                 connection.invoke("SendMessageAsync", message).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}`));
-            })
+            });
             
             connection.on("receiveMessage", message =>{
                 $("#mesajlar").append(message + "<br>")
-            })
+            });
         });
     </script>
 </head>
 <body>
     <!-- Durumlari gosterecegimiz div display none -->
     <div id="durum" style="display: none;"></div>
-
-    <input type="text" class="form-control" placeholder="isim giriniz" id="txtName">
-    <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button>
+    <input type="text" class="form-control" placeholder="isim giriniz" id="txtName"><br>
+    <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button><br>
+    <div id="userdurum" style="display: none;"></div>
     <div id="mesajlar"></div>
+    <br>
+    <div>
+        <ul id="clients">
+
+        </ul>
+    </div>
 </body>
 </html>
