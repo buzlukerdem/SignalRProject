@@ -88,12 +88,13 @@
                 $("#clients").html(text)
             });
 
-
+            // mesaj gonderimi
             $("#btnGonder").click(()=>{
                 let message = $("#txtName").val();
                 connection.invoke("SendMessageAsync", message).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}`));
             });
             
+            // mesajlari client da gosteren fonk..
             connection.on("receiveMessage", message =>{
                 $("#mesajlar").append(message + "<br>")
             });
