@@ -33,6 +33,7 @@ app.UseStaticFiles();
 app.UseCors();
 app.UseRouting();
 app.MapHub<MyHub>("/myhub");
+app.MapHub<MessageHub>("/messagehub");
 app.MapControllers();
 
 app.UseAuthorization();

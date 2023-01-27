@@ -13,7 +13,8 @@
         // endpoint baglanti url i belirtildi.
         $(document).ready(()=>{ 
             const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7174/myhub")
+            // .withUrl("https://localhost:7174/myhub")
+            .withUrl("https://localhost:7174/messagehub")
             // baglanti kopma durumunda ki fonk..
             .withAutomaticReconnect([1000, 3000, 5000]) // default olarak 0 - 2 - 10 - 30 dur tekrar istek sureleri
             .build();
@@ -58,27 +59,27 @@
                 animationFetch();
             });
 
-            connection.on("userJoined", connectionId => {
-                durum2.html(`${connectionId} id'li user baglandi...`)
-                durum2.css("background-color","green");
-                durum2.css("color","white");
-                durum2.fadeIn(3000,() => {
-                    setTimeout(() => {
-                        durum2.fadeOut(3000);
-                    }, 3000);
-                });
-            });
+            // connection.on("userJoined", connectionId => {
+            //     durum2.html(`${connectionId} id'li user baglandi...`)
+            //     durum2.css("background-color","green");
+            //     durum2.css("color","white");
+            //     durum2.fadeIn(3000,() => {
+            //         setTimeout(() => {
+            //             durum2.fadeOut(3000);
+            //         }, 3000);
+            //     });
+            // });
 
-            connection.on("userLeaved", connectionId => {
-                durum2.html(`${connectionId} id'li user ayrildi...`)
-                durum2.css("background-color","red");
-                durum2.css("color","white");
-                durum2.fadeIn(3000,() => {
-                    setTimeout(() => {
-                        durum2.fadeOut(3000);
-                    }, 3000);
-                });
-            });
+            // connection.on("userLeaved", connectionId => {
+            //     durum2.html(`${connectionId} id'li user ayrildi...`)
+            //     durum2.css("background-color","red");
+            //     durum2.css("color","white");
+            //     durum2.fadeIn(3000,() => {
+            //         setTimeout(() => {
+            //             durum2.fadeOut(3000);
+            //         }, 3000);
+            //     });
+            // });
 
             connection.on("clients", clientsData => {
                 let text = "";
@@ -91,20 +92,40 @@
             // mesaj gonderimi
             $("#btnGonder").click(()=>{
                 let message = $("#txtName").val();
-                connection.invoke("SendMessageAsync", message).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}`));
+                connection.invoke("SendMessageAsync", message, $("input[name=grup]:checked").val()).catch(error => console.log(`Mesaj gönderiminde hata olustu. ${error}`));
             });
             
             // mesajlari client da gosteren fonk..
             connection.on("receiveMessage", message =>{
                 $("#mesajlar").append(message + "<br>")
             });
+
+            // connectionId'leri gosterecek kisim..
+            let _connectionId = "";
+            connection.on("getConnectionId", connectionId =>{
+                _connectionId = connectionId;
+                $("#connectionId").html(`connection ID: ${connectionId}`)
+            });
+
+            $("#btnAboneOl").click(()=>{
+                let groupName = $("input[name=grup]:checked").val();
+                connection.invoke("addGroup", _connectionId, groupName).catch(error => console.log(`subscribe olurken hata olustu. ${error}`));
+            })
         });
     </script>
 </head>
 <body>
+    <div id="connectionId" style="background-color: black; color: white;"></div>
     <!-- Durumlari gosterecegimiz div display none -->
     <div id="durum" style="display: none;"></div>
     <input type="text" class="form-control" placeholder="isim giriniz" id="txtName"><br>
+
+    <!-- subscribe olacak radiobuttonlar -->
+    <input type="radio" name="grup" value="grup1"> GRUP-1
+    <input type="radio" name="grup" value="grup2"> GRUP-2
+    <input type="radio" name="grup" value="grup3"> GRUP-3
+    <button type="button" class="btn btn-primary" id="btnAboneOl">Abone OL</button><br>
+
     <button type="button" class="btn btn-primary" id="btnGonder">Gönder</button><br>
     <div id="userdurum" style="display: none;"></div>
     <div id="mesajlar"></div>
