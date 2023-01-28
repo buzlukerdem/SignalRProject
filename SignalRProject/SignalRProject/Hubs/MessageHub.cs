@@ -14,7 +14,7 @@ namespace SignalRProject.Hubs
 			//await Clients.All.SendAsync("receiveMessage", message);
 			#endregion
 			#region Others Kullanimi
-			await Clients.Others.SendAsync("receiveMessage", message);
+			//await Clients.Others.SendAsync("receiveMessage", message);
 			#endregion
 
 			await Clients.Group(groupName).SendAsync("receiveMessage", message);
